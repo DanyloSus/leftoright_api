@@ -7,7 +7,7 @@ from .repo import UserRepo
 from .schemas import UserCreate, UserRead, UserUpdate
 from .service import UserService
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter()
 
 
 def get_service(session: AsyncSession = Depends(get_session)) -> UserService:
