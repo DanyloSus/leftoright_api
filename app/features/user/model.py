@@ -1,8 +1,8 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.constants.validation import MAX_STRING_LENGTH
-from shared.models import Model
+from app.constants.validation import MAX_STRING_LENGTH
+from app.models import Model
 
 
 class User(Model):

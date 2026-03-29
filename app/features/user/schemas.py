@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from shared.constants.validation import MAX_STRING_LENGTH
+from app.constants.validation import MAX_STRING_LENGTH
 
 
 class UserCreate(BaseModel):
