@@ -9,3 +9,6 @@ httpx
 taskiq
 taskiq-redis
 redis
+passlib[bcrypt]
+bcrypt<4
+pyjwt
