@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.exceptions import ErrPermissionDenied
-from app.result import Err, Ok
+from app.di.exceptions import ErrPermissionDenied
+from app.di.result import Err, Ok
 
 
 def create_jwt_token(secret_key: str, algorithm: str, data: dict, expires: timedelta) -> str:

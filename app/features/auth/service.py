@@ -3,8 +3,8 @@ from datetime import timedelta
 from configs.jwt import JWTConfig
 from app.auth.context import context
 from app.auth.token import create_jwt_token
-from app.exceptions import ErrPermissionDenied
-from app.result import Err, Ok
+from app.di.exceptions import ErrPermissionDenied
+from app.di.result import Err, Ok
 
 from .repo import AuthRepo
 from .schemas import CreateUserParams, LoginWithEmailReq, RegisterWithEmailReq, TokenPairSchema

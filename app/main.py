@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from app.exceptions import ErrAlreadyExists, ErrNotFound, ErrPermissionDenied
+from app.di.exceptions import ErrAlreadyExists, ErrNotFound, ErrPermissionDenied
 
 from .router import api_router
 
