@@ -1,0 +1,50 @@
+from functools import wraps
+
+from sqlalchemy import insert, select
+from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.exceptions import ErrAlreadyExists, ErrNotFound
+from app.models.user import User
+from app.result import Err, Ok
+
+from .schemas import CreateUserParams, UserCredsRes
+
+
+def catch_database_errors(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except NoResultFound:
+            return Err(ErrNotFound())
+        except IntegrityError as e:
+            if e.orig.pgcode == '23505':
+                return Err(ErrAlreadyExists())
+            raise
+
+    return wrapper
+
+
+class AuthRepo:
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    @catch_database_errors
+    async def create_user(self, params: CreateUserParams):
+        result = await self._session.execute(
+            insert(User)
+            .values(email=params.email, username=params.username, hashed_password=params.hashed_password)
+            .returning(User.id)
+        )
+        await self._session.commit()
+        user_id = result.scalar_one()
+        return Ok(user_id)
+
+    @catch_database_errors
+    async def get_user_creds(self, email: str):
+        result = await self._session.execute(
+            select(User.id, User.email, User.hashed_password).where(User.email == email)
+        )
+        row = result.one()
+        return Ok(UserCredsRes(id=row.id, email=row.email, hashed_password=row.hashed_password))
