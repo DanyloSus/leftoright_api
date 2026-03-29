@@ -8,7 +8,7 @@ from app.di.exceptions import ErrAlreadyExists, ErrNotFound
 from app.features.user.model import User
 from app.di.result import Err, Ok
 
-from .schemas import CreateUserParams, UserCredsRes
+from .schemas import CreateUserParams, MeRes, UserCredsRes
 
 
 def catch_database_errors(func):
@@ -40,6 +40,14 @@ class AuthRepo:
         await self._session.commit()
         user_id = result.scalar_one()
         return Ok(user_id)
+
+    @catch_database_errors
+    async def get_user_by_id(self, user_id: int):
+        result = await self._session.execute(
+            select(User.id, User.email, User.username).where(User.id == user_id)
+        )
+        row = result.one()
+        return Ok(MeRes(id=row.id, email=row.email, username=row.username))
 
     @catch_database_errors
     async def get_user_creds(self, email: str):

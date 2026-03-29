@@ -1,9 +1,19 @@
 from fastapi import APIRouter
 
+from app.di.auth import UserIdDep
+
 from .di import AuthServiceDep
-from .schemas import LoginWithEmailReq, RegisterWithEmailReq, TokenPairSchema
+from .schemas import LoginWithEmailReq, MeRes, RegisterWithEmailReq, TokenPairSchema
 
 router = APIRouter()
+
+
+@router.get('/me', response_model=MeRes)
+async def get_me(user_id: UserIdDep, service: AuthServiceDep):
+    res, err = await service.get_me(user_id=user_id)
+    if err:
+        raise err
+    return res
 
 
 @router.post('/register', response_model=TokenPairSchema)

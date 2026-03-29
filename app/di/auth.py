@@ -23,11 +23,11 @@ def _get_user_id(
     if err:
         raise HTTPException(status_code=401, detail='Invalid token')
 
-    user_id = data.get('user_id')
-    if user_id is None:
+    sub = data.get('sub')
+    if sub is None:
         raise HTTPException(status_code=401, detail='Invalid token')
 
-    return user_id
+    return int(sub)
 
 
 UserIdDep = Annotated[int, Depends(_get_user_id)]

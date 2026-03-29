@@ -15,6 +15,12 @@ class AuthService:
         self._repo = repo
         self._jwt_config = jwt_config
 
+    async def get_me(self, user_id: int):
+        user, err = await self._repo.get_user_by_id(user_id)
+        if err:
+            return Err(err)
+        return Ok(user)
+
     async def register_with_email_provider(self, req: RegisterWithEmailReq):
         hashed_password = context.hash(req.password)
         user_id, err = await self._repo.create_user(

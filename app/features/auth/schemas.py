@@ -32,6 +32,14 @@ class UserCredsRes(BaseModel):
     model_config = {'from_attributes': True}
 
 
+class MeRes(BaseModel):
+    id: int
+    email: str
+    username: str
+
+    model_config = {'from_attributes': True}
+
+
 class CreateUserParams(BaseModel):
     email: str
     username: str
