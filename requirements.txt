@@ -1,0 +1,10 @@
+fastapi[standard]
+uvicorn[standard]
+psycopg[binary]
+sqlalchemy
+alembic
+pytest
+httpx
+taskiq
+taskiq-redis
+redis
