@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import ErrAlreadyExists, ErrNotFound
-from app.models.user import User
+from app.features.user.model import User
 from app.result import Err, Ok
 
 from .schemas import CreateUserParams, UserCredsRes
