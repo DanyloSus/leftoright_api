@@ -67,17 +67,21 @@ class SessionService:
         await self.match_service.create_bulk(first_round)
         matches_by_round[1] = first_round
 
+        # Build rounds 2..N: each round pairs winners from the previous round
         for round_number in range(2, total_rounds + 1):
             previous_matches = matches_by_round[round_number - 1]
             current_matches = self.match_service.build_next_round(
                 session.id, round_number, previous_matches,
             )
             await self.match_service.create_bulk(current_matches)
+            # Each pair of previous matches feeds into one parent match
             self.match_service.link_to_parent(previous_matches, current_matches)
             matches_by_round[round_number] = current_matches
 
+        # If multiple consecutive byes exist, push winners up through the bracket
         self.match_service.propagate_cascading_byes(matches_by_round, total_rounds)
 
+        # Set the session cursor to the first match that needs a user vote
         first_votable = self.match_service.find_first_votable(matches_by_round, total_rounds)
         if first_votable:
             session.current_round = first_votable.round
