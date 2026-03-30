@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Model, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.features.entity.model import Entity
     from app.features.user.model import User
 
 
@@ -18,3 +19,4 @@ class Tournament(Model, TimestampMixin):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
 
     user: Mapped["User"] = relationship(back_populates="tournaments")
+    entities: Mapped[list["Entity"]] = relationship(back_populates="tournament")
