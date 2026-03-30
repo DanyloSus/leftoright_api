@@ -3,10 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.di.auth import UserIdDep
 from app.features.entity.repo import EntityRepo
+from app.features.match.repo import MatchRepo
+from app.features.match.service import MatchService
 from app.features.tournament.repo import TournamentRepo
 from configs.session import get_session
 
-from .repo import MatchRepo, SessionRepo
+from .repo import SessionRepo
 from .schemas import SessionRead, VoteRequest, VoteResponse
 from .service import SessionService
 
@@ -17,7 +19,7 @@ session_router = APIRouter()
 def get_service(session: AsyncSession = Depends(get_session)) -> SessionService:
     return SessionService(
         session_repo=SessionRepo(session),
-        match_repo=MatchRepo(session),
+        match_service=MatchService(MatchRepo(session)),
         entity_repo=EntityRepo(session),
         tournament_repo=TournamentRepo(session),
     )

@@ -4,10 +4,11 @@ from fastapi import HTTPException, status
 
 from app.features.entity.repo import EntityRepo
 from app.features.match.model import Match
+from app.features.match.service import MatchService
 from app.features.tournament.repo import TournamentRepo
 
 from .model import Session, SessionStatus
-from .repo import MatchRepo, SessionRepo
+from .repo import SessionRepo
 from .schemas import MatchRead, SessionRead, VoteResponse
 
 
@@ -15,12 +16,12 @@ class SessionService:
     def __init__(
         self,
         session_repo: SessionRepo,
-        match_repo: MatchRepo,
+        match_service: MatchService,
         entity_repo: EntityRepo,
         tournament_repo: TournamentRepo,
     ) -> None:
         self.session_repo = session_repo
-        self.match_repo = match_repo
+        self.match_service = match_service
         self.entity_repo = entity_repo
         self.tournament_repo = tournament_repo
 
@@ -58,114 +59,34 @@ class SessionService:
             current_match_position=0,
         )
 
-        matches_by_round: dict[int, list[Match]] = {}
+        matches_by_round = {}
 
-        matches_by_round[1] = await self._create_first_round(
+        first_round = self.match_service.build_first_round(
             session.id, padded_entity_ids, bracket_size,
         )
-        await self._create_later_rounds(session.id, matches_by_round, total_rounds)
-        self._propagate_cascading_byes(matches_by_round, total_rounds)
-        self._set_first_votable_match(session, matches_by_round, total_rounds)
+        await self.match_service.create_bulk(first_round)
+        matches_by_round[1] = first_round
+
+        for round_number in range(2, total_rounds + 1):
+            previous_matches = matches_by_round[round_number - 1]
+            current_matches = self.match_service.build_next_round(
+                session.id, round_number, previous_matches,
+            )
+            await self.match_service.create_bulk(current_matches)
+            self.match_service.link_to_parent(previous_matches, current_matches)
+            matches_by_round[round_number] = current_matches
+
+        self.match_service.propagate_cascading_byes(matches_by_round, total_rounds)
+
+        first_votable = self.match_service.find_first_votable(matches_by_round, total_rounds)
+        if first_votable:
+            session.current_round = first_votable.round
+            session.current_match_position = first_votable.position
 
         await self.session_repo.commit()
 
         loaded_session = await self.session_repo.get_by_id(session.id)
         return self._to_session_read(loaded_session)
-
-    async def _create_first_round(
-        self,
-        session_id: int,
-        padded_entity_ids: list[int | None],
-        bracket_size: int,
-    ) -> list[Match]:
-        matches = []
-
-        for position in range(bracket_size // 2):
-            entity_1_id = padded_entity_ids[position * 2]
-            entity_2_id = padded_entity_ids[position * 2 + 1]
-
-            matches.append(Match(
-                session_id=session_id,
-                round=1,
-                position=position,
-                entity_1_id=entity_1_id,
-                entity_2_id=entity_2_id,
-                is_bye=entity_2_id is None,
-            ))
-
-        await self.match_repo.create_bulk(matches)
-        return matches
-
-    async def _create_later_rounds(
-        self,
-        session_id: int,
-        matches_by_round: dict[int, list[Match]],
-        total_rounds: int,
-    ) -> None:
-        for round_number in range(2, total_rounds + 1):
-            previous_matches = matches_by_round[round_number - 1]
-            current_matches = []
-
-            for position in range(len(previous_matches) // 2):
-                child_a = previous_matches[position * 2]
-                child_b = previous_matches[position * 2 + 1]
-
-                entity_1_id = child_a.entity_1_id if child_a.is_bye else None
-                entity_2_id = child_b.entity_1_id if child_b.is_bye else None
-
-                current_matches.append(Match(
-                    session_id=session_id,
-                    round=round_number,
-                    position=position,
-                    entity_1_id=entity_1_id,
-                    entity_2_id=entity_2_id,
-                    is_bye=(entity_1_id is not None) != (entity_2_id is not None),
-                ))
-
-            await self.match_repo.create_bulk(current_matches)
-
-            for index, previous_match in enumerate(previous_matches):
-                previous_match.next_match_id = current_matches[index // 2].id
-
-            matches_by_round[round_number] = current_matches
-
-    def _propagate_cascading_byes(
-        self,
-        matches_by_round: dict[int, list[Match]],
-        total_rounds: int,
-    ) -> None:
-        for round_number in range(2, total_rounds + 1):
-            for match in matches_by_round[round_number]:
-                if not match.is_bye or match.next_match_id is None:
-                    continue
-
-                winner_id = match.entity_1_id or match.entity_2_id
-                next_round_matches = matches_by_round.get(round_number + 1)
-
-                if not next_round_matches:
-                    continue
-
-                parent = next_round_matches[match.position // 2]
-
-                if match.position % 2 == 0:
-                    parent.entity_1_id = winner_id
-                else:
-                    parent.entity_2_id = winner_id
-
-                parent.is_bye = (parent.entity_1_id is not None) != (parent.entity_2_id is not None)
-
-    def _set_first_votable_match(
-        self,
-        session: Session,
-        matches_by_round: dict[int, list[Match]],
-        total_rounds: int,
-    ) -> None:
-        for round_number in range(1, total_rounds + 1):
-            for match in matches_by_round[round_number]:
-                if not match.is_bye and match.entity_1_id is not None and match.entity_2_id is not None:
-                    session.current_round = match.round
-                    session.current_match_position = match.position
-                    return
 
     async def get_session(self, session_id: int) -> SessionRead:
         session = await self.session_repo.get_by_id(session_id)

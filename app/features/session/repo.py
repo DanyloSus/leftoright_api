@@ -34,26 +34,3 @@ class SessionRepo:
 
     async def commit(self) -> None:
         await self.db.commit()
-
-
-class MatchRepo:
-    def __init__(self, session: AsyncSession) -> None:
-        self.db = session
-
-    async def create_bulk(self, matches: list[Match]) -> list[Match]:
-        self.db.add_all(matches)
-        await self.db.flush()
-        return matches
-
-    async def get_by_session_round_position(
-        self, session_id: int, round: int, position: int
-    ) -> Match | None:
-        result = await self.db.execute(
-            select(Match)
-            .where(
-                Match.session_id == session_id,
-                Match.round == round,
-                Match.position == position,
-            )
-        )
-        return result.scalar_one_or_none()
