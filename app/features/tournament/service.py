@@ -19,9 +19,6 @@ class TournamentService:
         if not tournament:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
 
-        if tournament.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-
         return TournamentRead.model_validate(tournament)
 
     async def create(self, user_id: int, data: TournamentCreate) -> TournamentRead:
