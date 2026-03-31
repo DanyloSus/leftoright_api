@@ -11,6 +11,7 @@ from app.di.limiter import limiter
 from app.logging_config import configure_logging, get_logger
 from app.middleware import RequestLoggingMiddleware
 from configs.cors import get_cors_config
+from configs.redis_client import redis_client
 from configs.session import engine
 
 from .router import api_router
@@ -26,6 +27,7 @@ async def lifespan(_: FastAPI):
     yield
     logger.info("shutdown_started")
     await engine.dispose()
+    await redis_client.aclose()
     logger.info("shutdown_complete")
 
 
