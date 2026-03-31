@@ -11,9 +11,11 @@ from configs.session import get_session
 from .repo import SessionRepo
 from .schemas import SessionRead, VoteRequest, VoteResponse
 from .service import SessionService
+from .ws import session_websocket
 
 tournament_router = APIRouter()
 session_router = APIRouter()
+session_router.add_api_websocket_route("/{session_id}/ws", session_websocket)
 
 
 def get_service(session: AsyncSession = Depends(get_session)) -> SessionService:

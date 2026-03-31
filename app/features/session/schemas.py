@@ -11,6 +11,8 @@ class MatchRead(BaseModel):
     entity_2: EntityRead | None
     is_bye: bool
     next_match_id: int | None
+    winner_entity_id: int | None
+    status: str
 
     model_config = {"from_attributes": True}
 

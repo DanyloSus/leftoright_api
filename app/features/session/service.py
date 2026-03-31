@@ -3,7 +3,7 @@ import random
 from fastapi import HTTPException, status
 
 from app.features.entity.repo import EntityRepo
-from app.features.match.model import Match
+from app.features.match.model import Match, MatchStatus
 from app.features.match.service import MatchService
 from app.features.tournament.repo import TournamentRepo
 
@@ -123,6 +123,9 @@ class SessionService:
 
         if chosen_entity_id not in (current_match.entity_1_id, current_match.entity_2_id):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid entity choice")
+
+        current_match.winner_entity_id = chosen_entity_id
+        current_match.status = MatchStatus.FINISHED
 
         if current_match.next_match_id is not None:
             next_match = None

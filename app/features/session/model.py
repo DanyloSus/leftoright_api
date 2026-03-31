@@ -14,8 +14,11 @@ if TYPE_CHECKING:
 
 
 class SessionStatus(str, enum.Enum):
+    WAITING = "waiting"
     IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+    PAUSED = "paused"
+    FINISHED = "finished"
+    COMPLETED = "completed"  # kept for backward compat
 
 
 class Session(Model, TimestampMixin):

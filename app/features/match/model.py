@@ -1,9 +1,16 @@
+import enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Model, TimestampMixin
+
+
+class MatchStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    VOTING = "VOTING"
+    FINISHED = "FINISHED"
 
 if TYPE_CHECKING:
     from app.features.entity.model import Entity
@@ -30,9 +37,15 @@ class Match(Model, TimestampMixin):
         ForeignKey('matches.id', ondelete='SET NULL')
     )
 
+    winner_entity_id: Mapped[int | None] = mapped_column(
+        ForeignKey('entities.id', ondelete='SET NULL')
+    )
+    status: Mapped[MatchStatus] = mapped_column(Enum(MatchStatus), default=MatchStatus.PENDING)
+
     session: Mapped["Session"] = relationship(back_populates="matches")
     entity_1: Mapped["Entity | None"] = relationship(foreign_keys=[entity_1_id])
     entity_2: Mapped["Entity | None"] = relationship(foreign_keys=[entity_2_id])
+    winner_entity: Mapped["Entity | None"] = relationship(foreign_keys=[winner_entity_id])
     next_match: Mapped["Match | None"] = relationship(
         remote_side=[id], foreign_keys=[next_match_id]
     )
