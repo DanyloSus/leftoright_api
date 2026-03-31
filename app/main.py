@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -9,6 +11,7 @@ from app.di.limiter import limiter
 from app.logging_config import configure_logging, get_logger
 from app.middleware import RequestLoggingMiddleware
 from configs.cors import get_cors_config
+from configs.session import engine
 
 from .router import api_router
 
@@ -16,7 +19,17 @@ configure_logging()
 
 logger = get_logger(__name__)
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    logger.info("startup")
+    yield
+    logger.info("shutdown_started")
+    await engine.dispose()
+    logger.info("shutdown_complete")
+
+
+app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 
 _cors = get_cors_config()
