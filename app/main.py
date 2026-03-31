@@ -1,8 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.di.exceptions import ErrAlreadyExists, ErrNotFound, ErrPermissionDenied
+from app.di.limiter import limiter
 from app.logging_config import configure_logging, get_logger
 from app.middleware import RequestLoggingMiddleware
 from configs.cors import get_cors_config
@@ -14,6 +17,7 @@ configure_logging()
 logger = get_logger(__name__)
 
 app = FastAPI()
+app.state.limiter = limiter
 
 _cors = get_cors_config()
 app.add_middleware(
@@ -23,8 +27,14 @@ app.add_middleware(
     allow_methods=_cors.ALLOW_METHODS,
     allow_headers=_cors.ALLOW_HEADERS,
 )
+app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.include_router(api_router, prefix='/api')
+
+
+@app.exception_handler(RateLimitExceeded)
+async def _(req: Request, err: RateLimitExceeded):
+    return JSONResponse(status_code=429, content={'detail': str(err)})
 
 
 @app.exception_handler(ErrAlreadyExists)
