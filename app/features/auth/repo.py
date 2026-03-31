@@ -19,7 +19,9 @@ def catch_database_errors(func):
         except NoResultFound:
             return Err(ErrNotFound())
         except IntegrityError as e:
-            if e.orig.pgcode == '23505':
+            # psycopg2 uses .pgcode; psycopg3 uses .sqlstate
+            pgcode = getattr(e.orig, 'pgcode', None) or getattr(e.orig, 'sqlstate', None)
+            if pgcode == '23505':
                 return Err(ErrAlreadyExists())
             raise
 
