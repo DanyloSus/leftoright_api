@@ -5,7 +5,9 @@ asyncpg
 sqlalchemy
 alembic
 pytest
+pytest-asyncio
 httpx
+aiosqlite
 taskiq
 taskiq-redis
 redis
