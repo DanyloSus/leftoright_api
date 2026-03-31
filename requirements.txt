@@ -14,3 +14,4 @@ redis
 passlib[bcrypt]
 bcrypt<4
 pyjwt
+structlog
