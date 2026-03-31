@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.di.exceptions import ErrAlreadyExists, ErrNotFound, ErrPermissionDenied
 from app.logging_config import configure_logging, get_logger
 from app.middleware import RequestLoggingMiddleware
+from configs.cors import get_cors_config
 
 from .router import api_router
 
@@ -13,6 +15,14 @@ logger = get_logger(__name__)
 
 app = FastAPI()
 
+_cors = get_cors_config()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors.ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=_cors.ALLOW_METHODS,
+    allow_headers=_cors.ALLOW_HEADERS,
+)
 app.add_middleware(RequestLoggingMiddleware)
 app.include_router(api_router, prefix='/api')
 

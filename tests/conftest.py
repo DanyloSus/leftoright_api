@@ -7,6 +7,9 @@ os.environ.setdefault("DB_HOST", "localhost")
 os.environ.setdefault("DB_PORT", "5432")
 os.environ.setdefault("DB_NAME", "test")
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing-only")
+os.environ.setdefault("CORS_ALLOW_ORIGINS", '["*"]')
+os.environ.setdefault("CORS_ALLOW_METHODS", '["*"]')
+os.environ.setdefault("CORS_ALLOW_HEADERS", '["*"]')
 
 import pytest
 import pytest_asyncio
