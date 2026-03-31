@@ -25,12 +25,12 @@ def _get_user_id(
     )
     if err:
         logger.warning("auth_failed", reason=str(err))
-        raise HTTPException(status_code=401, detail='Invalid token')
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    sub = data.get('sub')
+    sub = data.get("sub")
     if sub is None:
         logger.warning("auth_failed", reason="missing_sub_claim")
-        raise HTTPException(status_code=401, detail='Invalid token')
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     return int(sub)
 

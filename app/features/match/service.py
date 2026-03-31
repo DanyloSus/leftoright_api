@@ -22,15 +22,17 @@ class MatchService:
             entity_1_id = padded_entity_ids[position * 2]
             entity_2_id = padded_entity_ids[position * 2 + 1]
 
-            matches.append(Match(
-                session_id=session_id,
-                round=1,
-                position=position,
-                entity_1_id=entity_1_id,
-                entity_2_id=entity_2_id,
-                # None padding is at the end, so only entity_2 can be None
-                is_bye=entity_2_id is None,
-            ))
+            matches.append(
+                Match(
+                    session_id=session_id,
+                    round=1,
+                    position=position,
+                    entity_1_id=entity_1_id,
+                    entity_2_id=entity_2_id,
+                    # None padding is at the end, so only entity_2 can be None
+                    is_bye=entity_2_id is None,
+                )
+            )
 
         return matches
 
@@ -51,19 +53,23 @@ class MatchService:
             entity_1_id = child_a.entity_1_id if child_a.is_bye else None
             entity_2_id = child_b.entity_1_id if child_b.is_bye else None
 
-            current_matches.append(Match(
-                session_id=session_id,
-                round=round_number,
-                position=position,
-                entity_1_id=entity_1_id,
-                entity_2_id=entity_2_id,
-                # XOR: a bye when exactly one slot is filled (the other awaits a vote result)
-                is_bye=(entity_1_id is not None) != (entity_2_id is not None),
-            ))
+            current_matches.append(
+                Match(
+                    session_id=session_id,
+                    round=round_number,
+                    position=position,
+                    entity_1_id=entity_1_id,
+                    entity_2_id=entity_2_id,
+                    # XOR: a bye when exactly one slot is filled (the other awaits a vote result)
+                    is_bye=(entity_1_id is not None) != (entity_2_id is not None),
+                )
+            )
 
         return current_matches
 
-    def link_to_parent(self, previous_matches: list[Match], parent_matches: list[Match]) -> None:
+    def link_to_parent(
+        self, previous_matches: list[Match], parent_matches: list[Match]
+    ) -> None:
         # Every 2 previous matches share 1 parent: matches 0,1 → parent 0; matches 2,3 → parent 1
         for index, previous_match in enumerate(previous_matches):
             previous_match.next_match_id = parent_matches[index // 2].id
@@ -94,7 +100,9 @@ class MatchService:
                     parent.entity_2_id = winner_id
 
                 # Re-check if parent is now also a bye (one slot filled, one empty)
-                parent.is_bye = (parent.entity_1_id is not None) != (parent.entity_2_id is not None)
+                parent.is_bye = (parent.entity_1_id is not None) != (
+                    parent.entity_2_id is not None
+                )
 
     def find_first_votable(
         self,
@@ -103,6 +111,10 @@ class MatchService:
     ) -> Match | None:
         for round_number in range(1, total_rounds + 1):
             for match in matches_by_round[round_number]:
-                if not match.is_bye and match.entity_1_id is not None and match.entity_2_id is not None:
+                if (
+                    not match.is_bye
+                    and match.entity_1_id is not None
+                    and match.entity_2_id is not None
+                ):
                     return match
         return None

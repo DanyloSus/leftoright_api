@@ -3,15 +3,18 @@ from fastapi import status
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 async def _setup_tournament_with_entities(client, n: int) -> tuple[dict, list[dict]]:
     """Create a tournament owned by the authenticated client with n entities."""
     t = (await client.post("/api/tournaments/", json={"name": "T"})).json()
     entities = []
     for i in range(n):
-        e = (await client.post(
-            f"/api/tournaments/{t['id']}/entities/",
-            json={"name": f"Entity {i}"},
-        )).json()
+        e = (
+            await client.post(
+                f"/api/tournaments/{t['id']}/entities/",
+                json={"name": f"Entity {i}"},
+            )
+        ).json()
         entities.append(e)
     return t, entities
 
@@ -24,6 +27,7 @@ async def _start_session(client, tournament_id: int) -> dict:
 
 # ── start session ─────────────────────────────────────────────────────────────
 
+
 async def test_start_session(auth_client):
     t, _ = await _setup_tournament_with_entities(auth_client, 4)
     resp = await auth_client.post(f"/api/tournaments/{t['id']}/sessions/")
@@ -31,7 +35,7 @@ async def test_start_session(auth_client):
     data = resp.json()
     assert data["tournament_id"] == t["id"]
     assert data["status"] == "in_progress"
-    assert data["total_rounds"] == 2   # 4 entities → 2 rounds
+    assert data["total_rounds"] == 2  # 4 entities → 2 rounds
     assert data["winner_entity_id"] is None
     assert data["current_match"] is not None
 
@@ -70,6 +74,7 @@ async def test_start_session_requires_auth(client):
 
 # ── get session ───────────────────────────────────────────────────────────────
 
+
 async def test_get_session(auth_client):
     t, _ = await _setup_tournament_with_entities(auth_client, 2)
     session = await _start_session(auth_client, t["id"])
@@ -85,9 +90,14 @@ async def test_get_session_not_found(auth_client):
 
 async def test_get_session_no_auth_required(client):
     """Sessions are publicly readable — no token needed."""
-    r = await client.post("/api/auth/register", json={
-        "email": "pub@example.com", "username": "pub", "password": "pubpassword1",
-    })
+    r = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "pub@example.com",
+            "username": "pub",
+            "password": "pubpassword1",
+        },
+    )
     client.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
     t, _ = await _setup_tournament_with_entities(client, 2)
     session = await _start_session(client, t["id"])
@@ -98,6 +108,7 @@ async def test_get_session_no_auth_required(client):
 
 
 # ── vote ──────────────────────────────────────────────────────────────────────
+
 
 async def test_vote_advances_session(auth_client):
     t, _ = await _setup_tournament_with_entities(auth_client, 4)
@@ -169,16 +180,26 @@ async def test_vote_session_not_found(auth_client):
 
 async def test_vote_other_user_forbidden(client):
     """Session owned by user1 — user2 cannot vote on it."""
-    r1 = await client.post("/api/auth/register", json={
-        "email": "s_owner@example.com", "username": "s_owner", "password": "ownerpassword1",
-    })
+    r1 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "s_owner@example.com",
+            "username": "s_owner",
+            "password": "ownerpassword1",
+        },
+    )
     client.headers["Authorization"] = f"Bearer {r1.json()['access_token']}"
     t, _ = await _setup_tournament_with_entities(client, 2)
     session = await _start_session(client, t["id"])
 
-    r2 = await client.post("/api/auth/register", json={
-        "email": "s_other@example.com", "username": "s_other", "password": "otherpassword1",
-    })
+    r2 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "s_other@example.com",
+            "username": "s_other",
+            "password": "otherpassword1",
+        },
+    )
     client.headers["Authorization"] = f"Bearer {r2.json()['access_token']}"
 
     chosen = session["current_match"]["entity_1"]["id"]
@@ -202,10 +223,12 @@ async def test_full_bracket_4_entities(auth_client):
             break
         match = state["current_match"]
         chosen = match["entity_1"]["id"]
-        result = (await auth_client.post(
-            f"/api/sessions/{session_id}/vote",
-            json={"chosen_entity_id": chosen},
-        )).json()
+        result = (
+            await auth_client.post(
+                f"/api/sessions/{session_id}/vote",
+                json={"chosen_entity_id": chosen},
+            )
+        ).json()
         if result["is_completed"]:
             break
 

@@ -25,11 +25,15 @@ class SessionService:
         self.entity_repo = entity_repo
         self.tournament_repo = tournament_repo
 
-    async def start_session(self, tournament_id: int, user_id: int | None) -> SessionRead:
+    async def start_session(
+        self, tournament_id: int, user_id: int | None
+    ) -> SessionRead:
         tournament = await self.tournament_repo.get_by_id(tournament_id)
 
         if not tournament:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found"
+            )
 
         entities = await self.entity_repo.get_all_by_tournament(tournament_id)
 
@@ -62,7 +66,9 @@ class SessionService:
         matches_by_round = {}
 
         first_round = self.match_service.build_first_round(
-            session.id, padded_entity_ids, bracket_size,
+            session.id,
+            padded_entity_ids,
+            bracket_size,
         )
         await self.match_service.create_bulk(first_round)
         matches_by_round[1] = first_round
@@ -71,7 +77,9 @@ class SessionService:
         for round_number in range(2, total_rounds + 1):
             previous_matches = matches_by_round[round_number - 1]
             current_matches = self.match_service.build_next_round(
-                session.id, round_number, previous_matches,
+                session.id,
+                round_number,
+                previous_matches,
             )
             await self.match_service.create_bulk(current_matches)
             # Each pair of previous matches feeds into one parent match
@@ -82,7 +90,9 @@ class SessionService:
         self.match_service.propagate_cascading_byes(matches_by_round, total_rounds)
 
         # Set the session cursor to the first match that needs a user vote
-        first_votable = self.match_service.find_first_votable(matches_by_round, total_rounds)
+        first_votable = self.match_service.find_first_votable(
+            matches_by_round, total_rounds
+        )
         if first_votable:
             session.current_round = first_votable.round
             session.current_match_position = first_votable.position
@@ -96,33 +106,54 @@ class SessionService:
         session = await self.session_repo.get_by_id(session_id)
 
         if not session:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+            )
 
         return self._to_session_read(session)
 
-    async def vote(self, session_id: int, user_id: int | None, chosen_entity_id: int) -> VoteResponse:
+    async def vote(
+        self, session_id: int, user_id: int | None, chosen_entity_id: int
+    ) -> VoteResponse:
         session = await self.session_repo.get_by_id(session_id)
 
         if not session:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+            )
 
         if session.status == SessionStatus.COMPLETED:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Session already completed")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Session already completed",
+            )
 
         if session.user_id is not None and session.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+            )
 
         current_match = None
         for match in session.matches:
-            if match.round == session.current_round and match.position == session.current_match_position:
+            if (
+                match.round == session.current_round
+                and match.position == session.current_match_position
+            ):
                 current_match = match
                 break
 
         if not current_match:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No current match found")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No current match found"
+            )
 
-        if chosen_entity_id not in (current_match.entity_1_id, current_match.entity_2_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid entity choice")
+        if chosen_entity_id not in (
+            current_match.entity_1_id,
+            current_match.entity_2_id,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid entity choice"
+            )
 
         current_match.winner_entity_id = chosen_entity_id
         current_match.status = MatchStatus.FINISHED
@@ -169,14 +200,20 @@ class SessionService:
         current_round: int,
         current_position: int,
     ) -> Match | None:
-        sorted_matches = sorted(matches, key=lambda match: (match.round, match.position))
+        sorted_matches = sorted(
+            matches, key=lambda match: (match.round, match.position)
+        )
 
         for match in sorted_matches:
             if match.round < current_round:
                 continue
             if match.round == current_round and match.position <= current_position:
                 continue
-            if not match.is_bye and match.entity_1_id is not None and match.entity_2_id is not None:
+            if (
+                not match.is_bye
+                and match.entity_1_id is not None
+                and match.entity_2_id is not None
+            ):
                 return match
 
         return None
@@ -184,7 +221,10 @@ class SessionService:
     def _to_session_read(self, session: Session) -> SessionRead:
         current_match = None
         for match in session.matches:
-            if match.round == session.current_round and match.position == session.current_match_position:
+            if (
+                match.round == session.current_round
+                and match.position == session.current_match_position
+            ):
                 current_match = MatchRead.model_validate(match)
                 break
 

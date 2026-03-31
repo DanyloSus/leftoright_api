@@ -10,13 +10,13 @@ if TYPE_CHECKING:
 
 
 class Entity(Model, TimestampMixin):
-    __tablename__ = 'entities'
+    __tablename__ = "entities"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     youtube_url: Mapped[str | None] = mapped_column(String(512))
     tournament_id: Mapped[int] = mapped_column(
-        ForeignKey('tournaments.id', ondelete='CASCADE'), index=True
+        ForeignKey("tournaments.id", ondelete="CASCADE"), index=True
     )
 
     tournament: Mapped["Tournament"] = relationship(back_populates="entities")

@@ -44,27 +44,27 @@ app.add_middleware(
 )
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
-app.include_router(api_router, prefix='/api')
+app.include_router(api_router, prefix="/api")
 
 
 @app.exception_handler(RateLimitExceeded)
 async def _(req: Request, err: RateLimitExceeded):
-    return JSONResponse(status_code=429, content={'detail': str(err)})
+    return JSONResponse(status_code=429, content={"detail": str(err)})
 
 
 @app.exception_handler(ErrAlreadyExists)
 async def _(req: Request, err: ErrAlreadyExists):
     logger.warning("conflict_error", detail=err.message)
-    return JSONResponse(status_code=409, content={'detail': err.message})
+    return JSONResponse(status_code=409, content={"detail": err.message})
 
 
 @app.exception_handler(ErrNotFound)
 async def _(req: Request, err: ErrNotFound):
     logger.warning("not_found_error", detail=err.message)
-    return JSONResponse(status_code=404, content={'detail': err.message})
+    return JSONResponse(status_code=404, content={"detail": err.message})
 
 
 @app.exception_handler(ErrPermissionDenied)
 async def _(req: Request, err: ErrPermissionDenied):
     logger.warning("permission_denied_error", detail=err.message)
-    return JSONResponse(status_code=403, content={'detail': err.message})
+    return JSONResponse(status_code=403, content={"detail": err.message})

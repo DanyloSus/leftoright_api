@@ -27,7 +27,9 @@ def get_service(session: AsyncSession = Depends(get_session)) -> SessionService:
     )
 
 
-@tournament_router.post("/", response_model=SessionRead, status_code=status.HTTP_201_CREATED)
+@tournament_router.post(
+    "/", response_model=SessionRead, status_code=status.HTTP_201_CREATED
+)
 async def start_session(
     tournament_id: int,
     user_id: UserIdDep,

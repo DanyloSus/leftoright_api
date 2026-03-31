@@ -16,7 +16,9 @@ def get_service(session: AsyncSession = Depends(get_session)) -> TournamentServi
 
 
 @router.get("/", response_model=list[TournamentRead])
-async def list_tournaments(user_id: UserIdDep, service: TournamentService = Depends(get_service)):
+async def list_tournaments(
+    user_id: UserIdDep, service: TournamentService = Depends(get_service)
+):
     return await service.get_all(user_id)
 
 

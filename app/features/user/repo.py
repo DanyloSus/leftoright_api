@@ -19,21 +19,21 @@ class UserRepo:
 
     async def create(self, data: UserCreate) -> User:
         user = User(**data.model_dump())
-        
+
         self.session.add(user)
-        
+
         await self.session.commit()
         await self.session.refresh(user)
-        
+
         return user
 
     async def update(self, user: User, data: UserUpdate) -> User:
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(user, field, value)
-        
+
         await self.session.commit()
         await self.session.refresh(user)
-        
+
         return user
 
     async def delete(self, user: User) -> None:

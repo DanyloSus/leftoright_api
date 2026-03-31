@@ -8,7 +8,7 @@ from .schemas import LoginWithEmailReq, MeRes, RegisterWithEmailReq, TokenPairSc
 router = APIRouter()
 
 
-@router.get('/me', response_model=MeRes)
+@router.get("/me", response_model=MeRes)
 async def get_me(user_id: UserIdDep, service: AuthServiceDep):
     res, err = await service.get_me(user_id=user_id)
     if err:
@@ -16,7 +16,7 @@ async def get_me(user_id: UserIdDep, service: AuthServiceDep):
     return res
 
 
-@router.post('/register', response_model=TokenPairSchema)
+@router.post("/register", response_model=TokenPairSchema)
 async def register(service: AuthServiceDep, req: RegisterWithEmailReq):
     res, err = await service.register_with_email_provider(req=req)
     if err:
@@ -24,7 +24,7 @@ async def register(service: AuthServiceDep, req: RegisterWithEmailReq):
     return res
 
 
-@router.post('/login', response_model=TokenPairSchema)
+@router.post("/login", response_model=TokenPairSchema)
 async def login(service: AuthServiceDep, req: LoginWithEmailReq):
     res, err = await service.login_user_with_email_provider(req=req)
     if err:

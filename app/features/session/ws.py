@@ -21,7 +21,9 @@ async def session_websocket(websocket: WebSocket, session_id: int) -> None:
         event_type = first.get("type")
 
         if event_type not in ("JOIN_SESSION", "RECONNECT_SESSION"):
-            await websocket.send_json({"type": "ERROR", "code": "INVALID_FIRST_MESSAGE"})
+            await websocket.send_json(
+                {"type": "ERROR", "code": "INVALID_FIRST_MESSAGE"}
+            )
             await websocket.close()
             return
 
@@ -33,7 +35,9 @@ async def session_websocket(websocket: WebSocket, session_id: int) -> None:
 
         async with AsyncSessionFactory() as db:
             if event_type == "JOIN_SESSION":
-                ok = await _handle_join(websocket, session_id, player_id, first.get("name"), db)
+                ok = await _handle_join(
+                    websocket, session_id, player_id, first.get("name"), db
+                )
             else:
                 ok = await _handle_reconnect(websocket, session_id, player_id, db)
 
@@ -50,9 +54,13 @@ async def session_websocket(websocket: WebSocket, session_id: int) -> None:
                 elif msg_type == "START_NEXT_MATCH":
                     await _handle_start_next_match(websocket, session_id, player_id, db)
                 elif msg_type == "HOST_CONTROL":
-                    await _handle_host_control(websocket, session_id, player_id, message)
+                    await _handle_host_control(
+                        websocket, session_id, player_id, message
+                    )
                 else:
-                    await websocket.send_json({"type": "ERROR", "code": "UNKNOWN_EVENT"})
+                    await websocket.send_json(
+                        {"type": "ERROR", "code": "UNKNOWN_EVENT"}
+                    )
 
     except WebSocketDisconnect:
         pass
@@ -65,6 +73,7 @@ async def session_websocket(websocket: WebSocket, session_id: int) -> None:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 async def _load_session_fresh(db: AsyncSession, session_id: int) -> Session | None:
     """Always loads from the database — use for write paths."""
     return await SessionRepo(db).get_by_id(session_id)
@@ -72,7 +81,10 @@ async def _load_session_fresh(db: AsyncSession, session_id: int) -> Session | No
 
 def _current_match(session) -> Match | None:
     for m in session.matches:
-        if m.round == session.current_round and m.position == session.current_match_position:
+        if (
+            m.round == session.current_round
+            and m.position == session.current_match_position
+        ):
             return m
     return None
 
@@ -133,6 +145,7 @@ def _find_next_votable(
 # Event handlers
 # ---------------------------------------------------------------------------
 
+
 async def _handle_join(
     ws: WebSocket,
     session_id: int,
@@ -149,19 +162,25 @@ async def _handle_join(
     is_host = await manager.connect(session_id, player_id, ws, name)
     cur = _current_match(session)
 
-    await ws.send_json({
-        "type": "SESSION_STATE",
-        "session": _session_payload(session),
-        "currentMatch": _match_payload(cur) if cur else None,
-        "players": await manager.get_players_list(session_id),
-        "votes": await manager.get_votes(session_id),
-        "isHost": is_host,
-    })
+    await ws.send_json(
+        {
+            "type": "SESSION_STATE",
+            "session": _session_payload(session),
+            "currentMatch": _match_payload(cur) if cur else None,
+            "players": await manager.get_players_list(session_id),
+            "votes": await manager.get_votes(session_id),
+            "isHost": is_host,
+        }
+    )
 
-    await manager.broadcast(session_id, {
-        "type": "PLAYER_JOINED",
-        "player": {"id": player_id, "name": name, "isOnline": True},
-    }, exclude=player_id)
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "PLAYER_JOINED",
+            "player": {"id": player_id, "name": name, "isOnline": True},
+        },
+        exclude=player_id,
+    )
     return True
 
 
@@ -180,14 +199,16 @@ async def _handle_reconnect(
     is_host = await manager.connect(session_id, player_id, ws)
     cur = _current_match(session)
 
-    await ws.send_json({
-        "type": "SESSION_STATE",
-        "session": _session_payload(session),
-        "currentMatch": _match_payload(cur) if cur else None,
-        "players": await manager.get_players_list(session_id),
-        "votes": await manager.get_votes(session_id),
-        "isHost": is_host,
-    })
+    await ws.send_json(
+        {
+            "type": "SESSION_STATE",
+            "session": _session_payload(session),
+            "currentMatch": _match_payload(cur) if cur else None,
+            "players": await manager.get_players_list(session_id),
+            "votes": await manager.get_votes(session_id),
+            "isHost": is_host,
+        }
+    )
     return True
 
 
@@ -220,11 +241,14 @@ async def _handle_vote(
 
     all_voted = await manager.record_vote(session_id, player_id, entity_id)
 
-    await manager.broadcast(session_id, {
-        "type": "MATCH_UPDATED",
-        "matchId": cur.id,
-        "votes": await manager.get_vote_counts(session_id),
-    })
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "MATCH_UPDATED",
+            "matchId": cur.id,
+            "votes": await manager.get_vote_counts(session_id),
+        },
+    )
 
     if all_voted:
         await _finish_voting(session_id, session, cur, db)
@@ -241,9 +265,13 @@ async def _finish_voting(
     # Determine winner: most votes; tie → entity_1
     e1_votes = vote_counts.get(current_match.entity_1_id, 0)
     e2_votes = vote_counts.get(current_match.entity_2_id, 0)
-    winner_id = current_match.entity_1_id if e1_votes >= e2_votes else current_match.entity_2_id
+    winner_id = (
+        current_match.entity_1_id if e1_votes >= e2_votes else current_match.entity_2_id
+    )
 
-    await manager.broadcast(session_id, {"type": "VOTING_ENDED", "matchId": current_match.id})
+    await manager.broadcast(
+        session_id, {"type": "VOTING_ENDED", "matchId": current_match.id}
+    )
 
     # Persist winner on the match
     current_match.winner_entity_id = winner_id
@@ -283,21 +311,31 @@ async def _finish_voting(
     await db.commit()
     await invalidate_session_cache(session_id)
 
-    await manager.broadcast(session_id, {
-        "type": "MATCH_FINISHED",
-        "matchId": current_match.id,
-        "winner_entity_id": winner_id,
-    })
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "MATCH_FINISHED",
+            "matchId": current_match.id,
+            "winner_entity_id": winner_id,
+        },
+    )
 
     if not is_completed and next_votable and next_votable.round != old_round:
-        await manager.broadcast(session_id, {"type": "ROUND_FINISHED", "round": old_round})
-        await manager.broadcast(session_id, {"type": "ROUND_STARTED", "round": next_votable.round})
+        await manager.broadcast(
+            session_id, {"type": "ROUND_FINISHED", "round": old_round}
+        )
+        await manager.broadcast(
+            session_id, {"type": "ROUND_STARTED", "round": next_votable.round}
+        )
 
     if is_completed:
-        await manager.broadcast(session_id, {
-            "type": "SESSION_FINISHED",
-            "winner_entity_id": winner_id,
-        })
+        await manager.broadcast(
+            session_id,
+            {
+                "type": "SESSION_FINISHED",
+                "winner_entity_id": winner_id,
+            },
+        )
 
     await manager.clear_votes(session_id)
 
@@ -321,13 +359,18 @@ async def _handle_start_session(
 
     cur = _current_match(session)
     if cur:
-        await manager.broadcast(session_id, {
-            "type": "MATCH_STARTED",
-            "match": _match_payload(cur),
-            "is_bye": cur.is_bye,
-        })
+        await manager.broadcast(
+            session_id,
+            {
+                "type": "MATCH_STARTED",
+                "match": _match_payload(cur),
+                "is_bye": cur.is_bye,
+            },
+        )
         if not cur.is_bye:
-            await manager.broadcast(session_id, {"type": "VOTING_STARTED", "matchId": cur.id})
+            await manager.broadcast(
+                session_id, {"type": "VOTING_STARTED", "matchId": cur.id}
+            )
 
 
 async def _handle_start_next_match(
@@ -350,15 +393,20 @@ async def _handle_start_next_match(
         await ws.send_json({"type": "ERROR", "code": "NO_CURRENT_MATCH"})
         return
 
-    await manager.broadcast(session_id, {
-        "type": "MATCH_STARTED",
-        "match": _match_payload(cur),
-        "is_bye": cur.is_bye,
-    })
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "MATCH_STARTED",
+            "match": _match_payload(cur),
+            "is_bye": cur.is_bye,
+        },
+    )
 
     if not cur.is_bye:
         await manager.clear_votes(session_id)
-        await manager.broadcast(session_id, {"type": "VOTING_STARTED", "matchId": cur.id})
+        await manager.broadcast(
+            session_id, {"type": "VOTING_STARTED", "matchId": cur.id}
+        )
 
 
 async def _handle_host_control(
@@ -371,15 +419,21 @@ async def _handle_host_control(
         await ws.send_json({"type": "ERROR", "code": "NOT_HOST"})
         return
 
-    await manager.broadcast(session_id, {
-        "type": "HOST_STATE_CHANGED",
-        "state": data.get("state", {}),
-    })
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "HOST_STATE_CHANGED",
+            "state": data.get("state", {}),
+        },
+    )
 
 
 async def _handle_disconnect(session_id: int, player_id: str) -> None:
     await manager.disconnect(session_id, player_id)
-    await manager.broadcast(session_id, {
-        "type": "PLAYER_LEFT",
-        "playerId": player_id,
-    })
+    await manager.broadcast(
+        session_id,
+        {
+            "type": "PLAYER_LEFT",
+            "playerId": player_id,
+        },
+    )

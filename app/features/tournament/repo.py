@@ -28,7 +28,9 @@ class TournamentRepo:
 
         return tournament
 
-    async def update(self, tournament: Tournament, data: TournamentUpdate) -> Tournament:
+    async def update(
+        self, tournament: Tournament, data: TournamentUpdate
+    ) -> Tournament:
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(tournament, field, value)
 

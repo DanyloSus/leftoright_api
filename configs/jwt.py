@@ -8,14 +8,14 @@ from .base import Config
 
 class JWTConfig(Config):
     model_config = SettingsConfigDict(
-        env_file='.env',
-        env_file_encoding='utf-8',
-        extra='allow',
-        env_prefix='JWT_',
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="allow",
+        env_prefix="JWT_",
     )
 
     SECRET_KEY: str
-    ALGORITHM: str = 'HS256'
+    ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 108000
 

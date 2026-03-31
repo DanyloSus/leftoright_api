@@ -30,7 +30,9 @@ async def create_user(data: UserCreate, service: UserService = Depends(get_servi
 
 
 @router.patch("/{user_id}", response_model=UserRead)
-async def update_user(user_id: int, data: UserUpdate, service: UserService = Depends(get_service)):
+async def update_user(
+    user_id: int, data: UserUpdate, service: UserService = Depends(get_service)
+):
     return await service.update(user_id, data)
 
 

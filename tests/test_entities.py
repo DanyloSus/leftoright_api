@@ -3,6 +3,7 @@ from fastapi import status
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 async def _create_tournament(client, name="T") -> dict:
     resp = await client.post("/api/tournaments/", json={"name": name})
     assert resp.status_code == status.HTTP_201_CREATED
@@ -19,6 +20,7 @@ async def _create_entity(client, tournament_id: int, name="Entity A") -> dict:
 
 
 # ── create ────────────────────────────────────────────────────────────────────
+
 
 async def test_create_entity(auth_client):
     t = await _create_tournament(auth_client)
@@ -55,23 +57,36 @@ async def test_create_entity_tournament_not_found(auth_client):
 
 
 async def test_create_entity_other_user_forbidden(client):
-    r1 = await client.post("/api/auth/register", json={
-        "email": "owner_e@example.com", "username": "owner_e", "password": "ownerpassword1",
-    })
+    r1 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "owner_e@example.com",
+            "username": "owner_e",
+            "password": "ownerpassword1",
+        },
+    )
     token1 = r1.json()["access_token"]
     client.headers["Authorization"] = f"Bearer {token1}"
     t = (await client.post("/api/tournaments/", json={"name": "Private"})).json()
 
-    r2 = await client.post("/api/auth/register", json={
-        "email": "other_e@example.com", "username": "other_e", "password": "otherpassword1",
-    })
+    r2 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "other_e@example.com",
+            "username": "other_e",
+            "password": "otherpassword1",
+        },
+    )
     client.headers["Authorization"] = f"Bearer {r2.json()['access_token']}"
 
-    resp = await client.post(f"/api/tournaments/{t['id']}/entities/", json={"name": "Stolen"})
+    resp = await client.post(
+        f"/api/tournaments/{t['id']}/entities/", json={"name": "Stolen"}
+    )
     assert resp.status_code == status.HTTP_403_FORBIDDEN
 
 
 # ── list ──────────────────────────────────────────────────────────────────────
+
 
 async def test_list_entities(auth_client):
     t = await _create_tournament(auth_client)
@@ -96,6 +111,7 @@ async def test_list_entities_tournament_not_found(auth_client):
 
 # ── delete ────────────────────────────────────────────────────────────────────
 
+
 async def test_delete_entity(auth_client):
     t = await _create_tournament(auth_client)
     e = await _create_entity(auth_client, t["id"])
@@ -112,17 +128,29 @@ async def test_delete_entity_not_found(auth_client):
 
 
 async def test_delete_entity_other_user_forbidden(client):
-    r1 = await client.post("/api/auth/register", json={
-        "email": "del_owner_e@example.com", "username": "del_owner_e", "password": "ownerpassword1",
-    })
+    r1 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "del_owner_e@example.com",
+            "username": "del_owner_e",
+            "password": "ownerpassword1",
+        },
+    )
     token1 = r1.json()["access_token"]
     client.headers["Authorization"] = f"Bearer {token1}"
     t = (await client.post("/api/tournaments/", json={"name": "T"})).json()
-    e = (await client.post(f"/api/tournaments/{t['id']}/entities/", json={"name": "E"})).json()
+    e = (
+        await client.post(f"/api/tournaments/{t['id']}/entities/", json={"name": "E"})
+    ).json()
 
-    r2 = await client.post("/api/auth/register", json={
-        "email": "del_other_e@example.com", "username": "del_other_e", "password": "otherpassword1",
-    })
+    r2 = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "del_other_e@example.com",
+            "username": "del_other_e",
+            "password": "otherpassword1",
+        },
+    )
     client.headers["Authorization"] = f"Bearer {r2.json()['access_token']}"
 
     resp = await client.delete(f"/api/tournaments/{t['id']}/entities/{e['id']}")

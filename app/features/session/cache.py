@@ -48,6 +48,7 @@ class SessionSnapshot:
 # Serialisation helpers
 # ---------------------------------------------------------------------------
 
+
 def _entity_to_dict(entity) -> dict | None:
     if entity is None:
         return None
@@ -93,6 +94,7 @@ def _session_to_dict(session) -> dict:
 # Deserialisation helpers
 # ---------------------------------------------------------------------------
 
+
 def _dict_to_entity(d: dict | None) -> EntitySnapshot | None:
     if d is None:
         return None
@@ -136,16 +138,20 @@ def _dict_to_snapshot(d: dict) -> SessionSnapshot:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def _cache_key(session_id: int) -> str:
     return f"cache:session:{session_id}"
 
 
-async def get_cached_session(session_id: int, db: AsyncSession) -> SessionSnapshot | None:
+async def get_cached_session(
+    session_id: int, db: AsyncSession
+) -> SessionSnapshot | None:
     cached = await redis_client.get(_cache_key(session_id))
     if cached:
         return _dict_to_snapshot(json.loads(cached))
 
     from app.features.session.repo import SessionRepo  # local import avoids circular
+
     session = await SessionRepo(db).get_by_id(session_id)
     if session is None:
         return None

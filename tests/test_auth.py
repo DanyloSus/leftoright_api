@@ -3,7 +3,9 @@ import os
 import pytest
 from fastapi import status
 
-_is_sqlite = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:").startswith("sqlite")
+_is_sqlite = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:").startswith(
+    "sqlite"
+)
 
 REGISTER_PAYLOAD = {
     "email": "user@example.com",
@@ -20,7 +22,9 @@ async def test_register_returns_token_pair(client):
     assert "refresh_token" in data
 
 
-@pytest.mark.skipif(_is_sqlite, reason="duplicate detection uses pgcode — requires PostgreSQL")
+@pytest.mark.skipif(
+    _is_sqlite, reason="duplicate detection uses pgcode — requires PostgreSQL"
+)
 async def test_register_duplicate_email_returns_409(client):
     await client.post("/api/auth/register", json=REGISTER_PAYLOAD)
     resp = await client.post("/api/auth/register", json=REGISTER_PAYLOAD)
@@ -29,10 +33,13 @@ async def test_register_duplicate_email_returns_409(client):
 
 async def test_login_returns_token_pair(client):
     await client.post("/api/auth/register", json=REGISTER_PAYLOAD)
-    resp = await client.post("/api/auth/login", json={
-        "email": REGISTER_PAYLOAD["email"],
-        "password": REGISTER_PAYLOAD["password"],
-    })
+    resp = await client.post(
+        "/api/auth/login",
+        json={
+            "email": REGISTER_PAYLOAD["email"],
+            "password": REGISTER_PAYLOAD["password"],
+        },
+    )
     assert resp.status_code == status.HTTP_200_OK
     data = resp.json()
     assert "access_token" in data
@@ -41,10 +48,13 @@ async def test_login_returns_token_pair(client):
 
 async def test_login_wrong_password_returns_403(client):
     await client.post("/api/auth/register", json=REGISTER_PAYLOAD)
-    resp = await client.post("/api/auth/login", json={
-        "email": REGISTER_PAYLOAD["email"],
-        "password": "wrongpassword1",
-    })
+    resp = await client.post(
+        "/api/auth/login",
+        json={
+            "email": REGISTER_PAYLOAD["email"],
+            "password": "wrongpassword1",
+        },
+    )
     assert resp.status_code == status.HTTP_403_FORBIDDEN
 
 

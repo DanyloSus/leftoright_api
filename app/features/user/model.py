@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class User(Model, TimestampMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(unique=True, index=True)

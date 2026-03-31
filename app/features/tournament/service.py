@@ -17,7 +17,9 @@ class TournamentService:
         tournament = await self.repo.get_by_id(tournament_id)
 
         if not tournament:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found"
+            )
 
         return TournamentRead.model_validate(tournament)
 
@@ -26,14 +28,20 @@ class TournamentService:
 
         return TournamentRead.model_validate(tournament)
 
-    async def update(self, tournament_id: int, user_id: int, data: TournamentUpdate) -> TournamentRead:
+    async def update(
+        self, tournament_id: int, user_id: int, data: TournamentUpdate
+    ) -> TournamentRead:
         tournament = await self.repo.get_by_id(tournament_id)
 
         if not tournament:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found"
+            )
 
         if tournament.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+            )
 
         tournament = await self.repo.update(tournament, data)
 
@@ -43,9 +51,13 @@ class TournamentService:
         tournament = await self.repo.get_by_id(tournament_id)
 
         if not tournament:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found"
+            )
 
         if tournament.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+            )
 
         await self.repo.delete(tournament)

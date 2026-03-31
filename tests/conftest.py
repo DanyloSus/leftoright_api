@@ -18,11 +18,11 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Import all models so SQLAlchemy registers them with Model.metadata
-import app.features.user.model       # noqa: F401
+import app.features.user.model  # noqa: F401
 import app.features.tournament.model  # noqa: F401
-import app.features.entity.model     # noqa: F401
-import app.features.session.model    # noqa: F401
-import app.features.match.model      # noqa: F401
+import app.features.entity.model  # noqa: F401
+import app.features.session.model  # noqa: F401
+import app.features.match.model  # noqa: F401
 
 from app.models.base import Model
 from configs.session import get_session
@@ -33,7 +33,11 @@ _is_sqlite = TEST_DATABASE_URL.startswith("sqlite")
 
 engine = create_async_engine(
     TEST_DATABASE_URL,
-    **({"connect_args": {"check_same_thread": False}, "poolclass": StaticPool} if _is_sqlite else {}),
+    **(
+        {"connect_args": {"check_same_thread": False}, "poolclass": StaticPool}
+        if _is_sqlite
+        else {}
+    ),
 )
 TestingSessionFactory = async_sessionmaker(engine, expire_on_commit=False)
 
@@ -49,7 +53,9 @@ async def client():
 
     app.dependency_overrides[get_session] = override_get_session
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         yield c
 
     app.dependency_overrides.clear()
@@ -66,11 +72,14 @@ async def db(client):
 @pytest_asyncio.fixture
 async def auth_client(client):
     """AsyncClient pre-authenticated as a registered user. Also yields the token."""
-    resp = await client.post("/api/auth/register", json={
-        "email": "test@example.com",
-        "username": "testuser",
-        "password": "testpassword123",
-    })
+    resp = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "test@example.com",
+            "username": "testuser",
+            "password": "testpassword123",
+        },
+    )
     assert resp.status_code == 200
     token = resp.json()["access_token"]
     client.headers["Authorization"] = f"Bearer {token}"

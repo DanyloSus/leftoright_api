@@ -5,10 +5,10 @@ from fastapi import WebSocket
 
 from configs.redis_client import redis_client
 
-_PLAYERS = "ws:{sid}:players"   # Hash: player_id → json(PlayerInfo)
-_VOTES   = "ws:{sid}:votes"     # Hash: player_id → entity_id
-_HOST    = "ws:{sid}:host"      # String: player_id
-_CHAN    = "ws:{sid}:chan"       # Pub/Sub channel
+_PLAYERS = "ws:{sid}:players"  # Hash: player_id → json(PlayerInfo)
+_VOTES = "ws:{sid}:votes"  # Hash: player_id → entity_id
+_HOST = "ws:{sid}:host"  # String: player_id
+_CHAN = "ws:{sid}:chan"  # Pub/Sub channel
 
 
 class ConnectionManager:
@@ -123,7 +123,9 @@ class ConnectionManager:
     # Votes
     # ------------------------------------------------------------------
 
-    async def record_vote(self, session_id: int, player_id: str, entity_id: int) -> bool:
+    async def record_vote(
+        self, session_id: int, player_id: str, entity_id: int
+    ) -> bool:
         """Record vote. Returns True when all online players have voted."""
         votes_key = _VOTES.format(sid=session_id)
         await redis_client.hset(votes_key, player_id, entity_id)
@@ -135,7 +137,9 @@ class ConnectionManager:
         return online.issubset(votes_raw.keys())
 
     async def has_voted(self, session_id: int, player_id: str) -> bool:
-        return bool(await redis_client.hexists(_VOTES.format(sid=session_id), player_id))
+        return bool(
+            await redis_client.hexists(_VOTES.format(sid=session_id), player_id)
+        )
 
     async def clear_votes(self, session_id: int) -> None:
         await redis_client.delete(_VOTES.format(sid=session_id))
@@ -164,7 +168,9 @@ class ConnectionManager:
         result = []
         for v in raw.values():
             p = json.loads(v)
-            result.append({"id": p["id"], "name": p["name"], "isOnline": p["is_online"]})
+            result.append(
+                {"id": p["id"], "name": p["name"], "isOnline": p["is_online"]}
+            )
         return result
 
 

@@ -1,7 +1,7 @@
 from typing import TypeVar
 
-T = TypeVar('T')
-E = TypeVar('E')
+T = TypeVar("T")
+E = TypeVar("E")
 
 
 def Ok(value):

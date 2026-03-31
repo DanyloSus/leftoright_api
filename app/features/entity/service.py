@@ -15,7 +15,9 @@ class EntityService:
         tournament = await self.tournament_repo.get_by_id(tournament_id)
 
         if not tournament:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found"
+            )
 
         return tournament
 
@@ -26,11 +28,15 @@ class EntityService:
 
         return [EntityRead.model_validate(e) for e in entities]
 
-    async def create(self, tournament_id: int, user_id: int, data: EntityCreate) -> EntityRead:
+    async def create(
+        self, tournament_id: int, user_id: int, data: EntityCreate
+    ) -> EntityRead:
         tournament = await self._get_tournament_or_fail(tournament_id, user_id)
 
         if tournament.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+            )
 
         entity = await self.repo.create(tournament_id, data)
 
@@ -40,14 +46,20 @@ class EntityService:
         tournament = await self._get_tournament_or_fail(tournament_id, user_id)
 
         if tournament.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+            )
 
         entity = await self.repo.get_by_id(entity_id)
 
         if not entity:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found"
+            )
 
         if entity.tournament_id != tournament_id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found"
+            )
 
         await self.repo.delete(entity)

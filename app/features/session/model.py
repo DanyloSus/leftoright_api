@@ -22,14 +22,14 @@ class SessionStatus(str, enum.Enum):
 
 
 class Session(Model, TimestampMixin):
-    __tablename__ = 'sessions'
+    __tablename__ = "sessions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tournament_id: Mapped[int] = mapped_column(
-        ForeignKey('tournaments.id', ondelete='CASCADE'), index=True
+        ForeignKey("tournaments.id", ondelete="CASCADE"), index=True
     )
     user_id: Mapped[int | None] = mapped_column(
-        ForeignKey('users.id', ondelete='SET NULL'), index=True
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
     status: Mapped[SessionStatus] = mapped_column(
         Enum(SessionStatus), default=SessionStatus.IN_PROGRESS
@@ -38,7 +38,7 @@ class Session(Model, TimestampMixin):
     current_round: Mapped[int]
     current_match_position: Mapped[int]
     winner_entity_id: Mapped[int | None] = mapped_column(
-        ForeignKey('entities.id', ondelete='SET NULL')
+        ForeignKey("entities.id", ondelete="SET NULL")
     )
 
     tournament: Mapped["Tournament"] = relationship()

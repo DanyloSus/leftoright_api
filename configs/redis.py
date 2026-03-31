@@ -9,17 +9,17 @@ from .base import Config
 
 class RedisConfig(Config):
     model_config = SettingsConfigDict(
-        env_file='.env',
-        env_file_encoding='utf-8',
-        extra='allow',
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="allow",
     )
 
-    HOST: str = Field(..., description='redis host', alias='REDIS_HOST')
-    PORT: int = Field(..., description='redis port', alias='REDIS_PORT')
+    HOST: str = Field(..., description="redis host", alias="REDIS_HOST")
+    PORT: int = Field(..., description="redis port", alias="REDIS_PORT")
 
     @property
     def url(self):
-        return f'redis://{self.HOST}:{self.PORT}'
+        return f"redis://{self.HOST}:{self.PORT}"
 
 
 _redis_settings = RedisConfig()

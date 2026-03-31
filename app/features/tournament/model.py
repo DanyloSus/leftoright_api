@@ -11,12 +11,14 @@ if TYPE_CHECKING:
 
 
 class Tournament(Model, TimestampMixin):
-    __tablename__ = 'tournaments'
+    __tablename__ = "tournaments"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     description: Mapped[str | None]
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
 
     user: Mapped["User"] = relationship(back_populates="tournaments")
     entities: Mapped[list["Entity"]] = relationship(back_populates="tournament")

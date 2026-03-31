@@ -20,8 +20,10 @@ def catch_database_errors(func):
             return Err(ErrNotFound())
         except IntegrityError as e:
             # psycopg2 uses .pgcode; psycopg3 uses .sqlstate
-            pgcode = getattr(e.orig, 'pgcode', None) or getattr(e.orig, 'sqlstate', None)
-            if pgcode == '23505':
+            pgcode = getattr(e.orig, "pgcode", None) or getattr(
+                e.orig, "sqlstate", None
+            )
+            if pgcode == "23505":
                 return Err(ErrAlreadyExists())
             raise
 
@@ -36,7 +38,11 @@ class AuthRepo:
     async def create_user(self, params: CreateUserParams):
         result = await self._session.execute(
             insert(User)
-            .values(email=params.email, username=params.username, hashed_password=params.hashed_password)
+            .values(
+                email=params.email,
+                username=params.username,
+                hashed_password=params.hashed_password,
+            )
             .returning(User.id)
         )
         await self._session.commit()
@@ -57,4 +63,8 @@ class AuthRepo:
             select(User.id, User.email, User.hashed_password).where(User.email == email)
         )
         row = result.one()
-        return Ok(UserCredsRes(id=row.id, email=row.email, hashed_password=row.hashed_password))
+        return Ok(
+            UserCredsRes(
+                id=row.id, email=row.email, hashed_password=row.hashed_password
+            )
+        )

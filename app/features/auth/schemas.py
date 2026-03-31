@@ -21,7 +21,7 @@ class UserRes(BaseModel):
     id: int
     email: str
 
-    model_config = {'from_attributes': True}
+    model_config = {"from_attributes": True}
 
 
 class UserCredsRes(BaseModel):
@@ -29,7 +29,7 @@ class UserCredsRes(BaseModel):
     email: str
     hashed_password: str | None
 
-    model_config = {'from_attributes': True}
+    model_config = {"from_attributes": True}
 
 
 class MeRes(BaseModel):
@@ -37,7 +37,7 @@ class MeRes(BaseModel):
     email: str
     username: str
 
-    model_config = {'from_attributes': True}
+    model_config = {"from_attributes": True}
 
 
 class CreateUserParams(BaseModel):
