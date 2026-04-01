@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-north-1' }}
   ECR_REPOSITORY: leftoright-api
 
 jobs:
