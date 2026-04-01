@@ -3,6 +3,9 @@
 # Usage: deploy.sh <ecr_registry> <ecr_repository> <image_tag> <aws_region>
 set -euo pipefail
 
+# Ensure PATH includes common install locations for non-interactive SSH sessions
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+
 ECR_REGISTRY="$1"
 ECR_REPOSITORY="$2"
 IMAGE_TAG="$3"
