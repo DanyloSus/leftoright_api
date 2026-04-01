@@ -3,7 +3,7 @@ services:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
-      - .env.prod
+      - .env
     ports:
       - "8000:80"
     healthcheck:
@@ -21,7 +21,7 @@ services:
   migration:
     image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG:-latest}
     env_file:
-      - .env.prod
+      - .env
     command: ["python", "-m", "alembic", "upgrade", "head"]
     profiles:
       - migrate
