@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'eu-north-1' }}
-  ECR_REPOSITORY: leftoright-api
+  ECR_REPOSITORY: leftoright/prod
 
 jobs:
   lint:

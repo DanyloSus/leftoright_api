@@ -10,9 +10,9 @@
 
 ### AWS Resources
 
-1. **ECR Repository** — create one named `leftoright-api`:
+1. **ECR Repository** — create one named `leftoright/prod`:
    ```bash
-   aws ecr create-repository --repository-name leftoright-api --region <region>
+   aws ecr create-repository --repository-name leftoright/prod --region <region>
    ```
 
 2. **RDS PostgreSQL instance** — ensure the security group allows inbound from the EC2 security group on port 5432.
@@ -35,7 +35,7 @@ Add these in **Settings → Secrets and variables → Actions**:
 | `EC2_USER`          | SSH user (`ubuntu` for Ubuntu AMIs)                  |
 | `EC2_SSH_KEY`       | Private SSH key (PEM format) for the EC2 instance    |
 
-Optionally set the **repository variable** `AWS_REGION` (defaults to `us-east-1`).
+Optionally set the **repository variable** `AWS_REGION` (defaults to `eu-north-1`).
 
 ## Initial EC2 Setup (one-time)
 
@@ -96,7 +96,7 @@ ssh -i key.pem ubuntu@<ec2-host>
 
 cd /home/ubuntu/app
 ECR_REGISTRY=<account-id>.dkr.ecr.<region>.amazonaws.com
-ECR_REPOSITORY=leftoright-api
+ECR_REPOSITORY=leftoright/prod
 IMAGE_TAG=latest
 AWS_REGION=<region>
 
@@ -110,5 +110,5 @@ Deploy a previous image tag:
 ```bash
 ssh -i key.pem ubuntu@<ec2-host>
 cd /home/ubuntu/app
-bash deploy.sh <ecr-registry> leftoright-api <previous-commit-sha> <region>
+bash deploy.sh <ecr-registry> leftoright/prod <previous-commit-sha> <region>
 ```
