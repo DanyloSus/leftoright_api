@@ -11,7 +11,6 @@ os.environ.setdefault("CORS_ALLOW_ORIGINS", '["*"]')
 os.environ.setdefault("CORS_ALLOW_METHODS", '["*"]')
 os.environ.setdefault("CORS_ALLOW_HEADERS", '["*"]')
 
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.match.model import Match, MatchStatus
 from configs.session import AsyncSessionFactory
 
-from .cache import SessionSnapshot, get_cached_session, invalidate_session_cache
+from .cache import get_cached_session, invalidate_session_cache
 from .connection_manager import ConnectionManager
 from .model import Session, SessionStatus
 from .repo import SessionRepo
