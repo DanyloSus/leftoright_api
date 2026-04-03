@@ -71,6 +71,7 @@ Bracket sessions also support real-time multiplayer via WebSockets (`/api/sessio
 git clone <repository-url>
 cd leftoright_backend
 cp .env.example .env   # fill in your values
+pip install -r requirement.txt
 ```
 
 Required environment variables:
@@ -93,7 +94,7 @@ Required environment variables:
 ### 2. Run with Docker Compose
 
 ```bash
-docker compose up api
+docker compose up --build
 ```
 
 This starts the API server, PostgreSQL, and Redis. The API is available at `http://localhost:<APP_PORT>/api`.
