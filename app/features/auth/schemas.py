@@ -12,21 +12,24 @@ class LoginWithEmailReq(BaseModel):
     password: str = Field(min_length=10, max_length=100)
 
 
-class TokenPairSchema(BaseModel):
-    access_token: str
-    refresh_token: str
-
-
 class UserRes(BaseModel):
     id: int
     email: str
+    username: str
 
     model_config = {"from_attributes": True}
+
+
+class TokenPairSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    user: UserRes
 
 
 class UserCredsRes(BaseModel):
     id: int
     email: str
+    username: str
     hashed_password: str | None
 
     model_config = {"from_attributes": True}

@@ -14,6 +14,7 @@ from .schemas import (
     LoginWithEmailReq,
     RegisterWithEmailReq,
     TokenPairSchema,
+    UserRes,
 )
 
 logger = structlog.get_logger(__name__)
@@ -42,25 +43,27 @@ class AuthService:
             logger.warning("register_failed", email=req.email, reason=str(err))
             return Err(err)
         logger.info("register_success", email=req.email, user_id=user_id)
-        tokens = self.__create_token_pair(user_id)
+        user = UserRes(id=user_id, email=req.email, username=req.username)
+        tokens = self.__create_token_pair(user_id, user)
         return Ok(tokens)
 
     async def login_user_with_email_provider(self, req: LoginWithEmailReq):
         logger.info("login_attempt", email=req.email)
-        user, err = await self._repo.get_user_creds(req.email)
+        user_creds, err = await self._repo.get_user_creds(req.email)
         if err:
             logger.warning("login_failed", email=req.email, reason="user_not_found")
             return Err(err)
-        if not context.verify(req.password, user.hashed_password):
+        if not context.verify(req.password, user_creds.hashed_password):
             logger.warning(
                 "login_failed", email=req.email, reason="invalid_credentials"
             )
             return Err(ErrPermissionDenied("Invalid credentials"))
-        logger.info("login_success", email=req.email, user_id=user.id)
-        tokens = self.__create_token_pair(user.id)
+        logger.info("login_success", email=req.email, user_id=user_creds.id)
+        user = UserRes(id=user_creds.id, email=user_creds.email, username=user_creds.username)
+        tokens = self.__create_token_pair(user_creds.id, user)
         return Ok(tokens)
 
-    def __create_token_pair(self, user_id: int) -> TokenPairSchema:
+    def __create_token_pair(self, user_id: int, user: UserRes) -> TokenPairSchema:
         access_token = create_jwt_token(
             secret_key=self._jwt_config.SECRET_KEY,
             algorithm=self._jwt_config.ALGORITHM,
@@ -73,4 +76,4 @@ class AuthService:
             data={"sub": str(user_id)},
             expires=timedelta(minutes=self._jwt_config.REFRESH_TOKEN_EXPIRE_MINUTES),
         )
-        return TokenPairSchema(access_token=access_token, refresh_token=refresh_token)
+        return TokenPairSchema(access_token=access_token, refresh_token=refresh_token, user=user)

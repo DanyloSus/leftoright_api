@@ -60,11 +60,11 @@ class AuthRepo:
     @catch_database_errors
     async def get_user_creds(self, email: str):
         result = await self._session.execute(
-            select(User.id, User.email, User.hashed_password).where(User.email == email)
+            select(User.id, User.email, User.username, User.hashed_password).where(User.email == email)
         )
         row = result.one()
         return Ok(
             UserCredsRes(
-                id=row.id, email=row.email, hashed_password=row.hashed_password
+                id=row.id, email=row.email, username=row.username, hashed_password=row.hashed_password
             )
         )
