@@ -93,7 +93,7 @@ Required environment variables:
 ### 2. Run with Docker Compose
 
 ```bash
-docker-compose up api
+docker compose up api
 ```
 
 This starts the API server, PostgreSQL, and Redis. The API is available at `http://localhost:<APP_PORT>/api`.
@@ -102,7 +102,7 @@ This starts the API server, PostgreSQL, and Redis. The API is available at `http
 
 ```bash
 # Inside the running container
-docker-compose exec api alembic upgrade head
+docker compose exec api alembic upgrade head
 
 # Or locally (with DATABASE_URL configured)
 alembic upgrade head
@@ -156,7 +156,7 @@ pytest tests/test_tournaments.py::test_create_tournament -v
 ### Docker (PostgreSQL)
 
 ```bash
-docker-compose --profile test up test
+docker compose --profile test up test
 ```
 
 Tests use SQLite in-memory by default. Set `TEST_DATABASE_URL=postgresql+psycopg://...` to run against PostgreSQL instead.
